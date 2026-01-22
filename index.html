@@ -1,771 +1,822 @@
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Crypto Analyzer | SMC Strategy</title>
-    <!-- Chart.js for rendering candlesticks and indicators -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Chart.js Financial Adapter -->
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-    <!-- Luxon for time handling -->
-    <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
-    <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
+    <title>T-REX Trading AI</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0f1115;
-            --bg-card: #181b21;
-            --bg-hover: #23272f;
-            --text-primary: #e2e8f0;
-            --text-secondary: #94a3b8;
-            --accent-green: #22c55e;
-            --accent-red: #ef4444;
-            --accent-blue: #3b82f6;
-            --accent-yellow: #eab308;
-            --border: #2d3748;
+            --primary-neon: #00f3ff;
+            --secondary-neon: #bc13fe;
+            --tertiary-neon: #00ff88;
+            --bg-dark: #050505;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
+            font-family: 'Rajdhani', sans-serif;
             background-color: var(--bg-dark);
-            color: var(--text-primary);
-            height: 100vh;
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(188, 19, 254, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 243, 255, 0.08) 0%, transparent 40%);
+        }
+
+        /* Particle Canvas */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Ambient Background Blobs */
+        .ambient-light {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 243, 255, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            animation: float 10s infinite ease-in-out;
+            top: -100px;
+            left: -100px;
+        }
+        
+        .ambient-light-2 {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(188, 19, 254, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            animation: float 8s infinite ease-in-out reverse;
+            bottom: -50px;
+            right: -50px;
+        }
+        
+        .ambient-light-3 {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(0, 255, 136, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(50px);
+            z-index: -1;
+            animation: pulse 6s infinite ease-in-out;
+            top: 40%;
+            right: 10%;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 50px); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        .poster-container {
+            width: 100%;
+            max-width: 720px;
+            min-height: 960px;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
+            position: relative;
             overflow: hidden;
+            padding-bottom: 30px;
         }
 
         /* Header */
         header {
-            height: 60px;
-            background-color: var(--bg-card);
-            border-bottom: 1px solid var(--border);
+            padding: 30px 40px;
             display: flex;
-            align-items: center;
-            padding: 0 20px;
             justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
         }
 
-        .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.2rem; color: var(--accent-blue); }
-        .status-badge {
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--accent-blue);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #fff, var(--primary-neon));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+            position: relative;
+        }
+        
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-neon), transparent);
+            animation: scan 2s infinite;
+        }
+        
+        @keyframes scan {
+            0% { transform: scaleX(0); opacity: 0; }
+            50% { transform: scaleX(1); opacity: 1; }
+            100% { transform: scaleX(0); opacity: 0; }
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 20px 40px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            line-height: 1;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideUp 0.8s forwards 0.2s;
+        }
+
+        .hero-title span {
+            display: block;
+            font-size: 1rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 300;
+            color: var(--primary-neon);
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+            text-transform: none;
+        }
+
+        .hero-title .highlight {
+            background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(0, 243, 255, 0.4));
+            position: relative;
+        }
+        
+        .hero-title .highlight::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(0, 243, 255, 0.2), transparent 70%);
+            z-index: -1;
+            animation: glow 3s infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 80%;
+            margin: 0 auto;
+            line-height: 1.5;
+            opacity: 0;
+            animation: fadeIn 1s forwards 0.6s;
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 20px 40px;
+            margin: 10px 0;
+            position: relative;
+            z-index: 10;
+            opacity: 0;
+            animation: fadeIn 1s forwards 0.8s;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--text-muted);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-neon), transparent);
+        }
+
+        .features-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .feature-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px 10px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .feature-item:hover::before {
+            opacity: 1;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -10px rgba(0, 243, 255, 0.2);
+            border-color: rgba(0, 243, 255, 0.3);
+        }
+        
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 15px;
+            position: relative;
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
         }
-        .status-dot { width: 8px; height: 8px; background: var(--accent-blue); border-radius: 50%; animation: pulse 2s infinite; }
-
-        /* Main Layout */
-        main {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 280px 1fr 320px;
-            overflow: hidden;
+        
+        .feature-icon::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 243, 255, 0.3), transparent 70%);
+            z-index: -1;
+            animation: pulse 3s infinite;
+        }
+        
+        .feature-icon .material-icons {
+            font-size: 28px;
+            color: var(--primary-neon);
+        }
+        
+        .feature-item:nth-child(2) .feature-icon .material-icons {
+            color: var(--secondary-neon);
+        }
+        
+        .feature-item:nth-child(2) .feature-icon::after {
+            background: radial-gradient(circle, rgba(188, 19, 254, 0.3), transparent 70%);
+        }
+        
+        .feature-item:nth-child(3) .feature-icon .material-icons {
+            color: var(--tertiary-neon);
+        }
+        
+        .feature-item:nth-child(3) .feature-icon::after {
+            background: radial-gradient(circle, rgba(0, 255, 136, 0.3), transparent 70%);
+        }
+        
+        .feature-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+            color: white;
+            font-weight: 700;
+        }
+        
+        .feature-desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+        
+        /* Circuit pattern background for features */
+        .circuit-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
+            z-index: -1;
+            opacity: 0.5;
         }
 
-        /* Sidebar - Controls */
-        .sidebar {
-            background-color: var(--bg-card);
-            border-right: 1px solid var(--border);
-            padding: 20px;
+        /* AI Analyzers Section */
+        .analyzers-section {
+            padding: 10px 40px;
             display: flex;
             flex-direction: column;
             gap: 20px;
-            overflow-y: auto;
-        }
-
-        .control-group { display: flex; flex-direction: column; gap: 8px; }
-        label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; }
-        
-        select, input, button {
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            padding: 10px;
-            border-radius: 6px;
-            outline: none;
-            transition: 0.2s;
-        }
-        select:focus, input:focus { border-color: var(--accent-blue); }
-        
-        .btn-primary {
-            background: var(--accent-blue);
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .btn-primary:hover { opacity: 0.9; }
-
-        .stats-card {
-            background: var(--bg-dark);
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-        }
-        .stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem; }
-        .stat-val.win { color: var(--accent-green); }
-        .stat-val.loss { color: var(--accent-red); }
-
-        /* Center - Chart */
-        .chart-area {
+            flex-grow: 1;
             position: relative;
+            z-index: 10;
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
             padding: 20px;
             display: flex;
-            flex-direction: column;
-        }
-        .chart-container {
-            flex: 1;
-            position: relative;
-            background: var(--bg-card);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            padding: 10px;
-        }
-        .chart-legend {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 10px;
-            font-size: 0.8rem;
-        }
-        .legend-item { display: flex; align-items: center; gap: 5px; }
-        .dot { width: 10px; height: 10px; border-radius: 2px; }
-
-        /* Right - Signals & Logs */
-        .feed-panel {
-            background-color: var(--bg-card);
-            border-left: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .panel-header {
-            padding: 15px;
-            border-bottom: 1px solid var(--border);
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-        }
-
-        .tabs { display: flex; border-bottom: 1px solid var(--border); }
-        .tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            border-bottom: 2px solid transparent;
-        }
-        .tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); background: rgba(59, 130, 246, 0.05); }
-
-        .log-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        /* Log Cards */
-        .signal-card {
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 12px;
-            font-size: 0.85rem;
-            animation: slideIn 0.3s ease;
-        }
-        .signal-card.buy { border-left: 3px solid var(--accent-green); }
-        .signal-card.sell { border-left: 3px solid var(--accent-red); }
-        
-        .signal-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: 700; }
-        .signal-time { color: var(--text-secondary); font-size: 0.75rem; }
-        .signal-details { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .detail-item span:first-child { color: var(--text-secondary); display: block; font-size: 0.75rem; }
-        
-        .tag {
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            background: #333;
-        }
-        .tag.ob { background: rgba(234, 179, 8, 0.2); color: var(--accent-yellow); }
-        .tag.fvg { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
-        .tag.swp { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
-
-        /* Toasts */
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 1000;
-        }
-        .toast {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 300px;
-            animation: slideLeft 0.3s ease;
-        }
-        .toast-icon { font-size: 1.5rem; }
-        .toast-content h4 { font-size: 0.95rem; margin-bottom: 4px; }
-        .toast-content p { font-size: 0.8rem; color: var(--text-secondary); }
-
-        /* Telegram Mock */
-        .telegram-mock {
-            margin-top: auto;
-            background: #2a5497; /* Telegram Blue */
+            text-decoration: none;
             color: white;
-            padding: 15px;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .card.smc {
+            animation: slideUp 0.8s forwards 1s;
+            border-left: 3px solid var(--primary-neon);
+        }
+        
+        .card.elliott {
+            animation: slideUp 0.8s forwards 1.2s;
+            border-left: 3px solid var(--secondary-neon);
         }
 
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideLeft { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: 0.5s;
+        }
+
+        .card:hover::before {
+            left: 100%;
+        }
+
+        .card:hover {
+            transform: scale(1.02) translateY(-5px);
+            box-shadow: 0 10px 40px -10px rgba(0, 243, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .card.smc:hover {
+            box-shadow: 0 10px 40px -10px rgba(0, 243, 255, 0.25);
+        }
+
+        .card.elliott:hover {
+            box-shadow: 0 10px 40px -10px rgba(188, 19, 254, 0.25);
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-icon::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.1), transparent 30%);
+            animation: rotate 4s linear infinite;
+        }
+        
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        .card-icon .material-icons {
+            font-size: 28px;
+            z-index: 1;
+        }
+
+        .smc .card-icon { color: var(--primary-neon); }
+        .elliott .card-icon { color: var(--secondary-neon); }
+
+        .card-content {
+            flex-grow: 1;
+        }
+
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .card-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        .card-arrow {
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .card-arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Visual Decorations inside Cards */
+        .card-bg-deco {
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            font-size: 150px;
+            opacity: 0.03;
+            pointer-events: none;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover .card-bg-deco {
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        /* Contact Section */
+        .contact-section {
+            padding: 20px 40px 30px;
+            text-align: center;
+            margin-top: auto;
+            position: relative;
+            z-index: 10;
+            opacity: 0;
+            animation: fadeIn 1s forwards 1.4s;
+        }
+
+        .contact-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 35px;
+            background: transparent;
+            color: var(--primary-neon);
+            border: 1px solid var(--primary-neon);
+            border-radius: 50px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+        }
+
+        .contact-btn:hover {
+            background: var(--primary-neon);
+            color: #000;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.6);
+        }
+
+        .contact-btn .material-icons {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .contact-note {
+            margin-top: 15px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+
+        /* Animations */
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Grid Background */
+        .grid-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -2;
+            mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+        }
 
         /* Responsive */
-        @media (max-width: 1024px) {
-            main { grid-template-columns: 1fr; grid-template-rows: auto 400px 1fr; overflow-y: auto; }
-            .sidebar { flex-direction: row; flex-wrap: wrap; max-height: 200px; }
-            .feed-panel { height: 400px; }
+        @media (max-width: 600px) {
+            .hero-title {
+                font-size: 2.8rem;
+            }
+            .features-container {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .card {
+                padding: 15px;
+            }
+            .card-icon {
+                width: 45px;
+                height: 45px;
+            }
+            .contact-btn {
+                padding: 12px 30px;
+            }
         }
     </style>
 </head>
 <body>
+    <canvas id="particles-canvas"></canvas>
+    
+    <div class="ambient-light"></div>
+    <div class="ambient-light-2"></div>
+    <div class="ambient-light-3"></div>
 
-    <header>
-        <div class="logo">
-            <i class="ph ph-robot"></i>
-            SMC AI Analyzer
-        </div>
-        <div class="status-badge">
-            <div class="status-dot"></div>
-            System Online: BTCUSDT
-        </div>
-        <div>
-            <button style="background:transparent; border:none; color:white; cursor:pointer;">
-                <i class="ph ph-gear" style="font-size:1.5rem;"></i>
-            </button>
-        </div>
-    </header>
+    <div class="poster-container">
+        <div class="grid-bg"></div>
 
-    <main>
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="control-group">
-                <label>Select Pair</label>
-                <select id="pairSelect">
-                    <option value="BTCUSDT">BTC/USDT</option>
-                    <option value="ETHUSDT">ETH/USDT</option>
-                    <option value="SOLUSDT">SOL/USDT</option>
-                </select>
-            </div>
+        <header>
+            <div class="logo">T-REX</div>
+            <i class="material-icons" style="color: var(--text-muted);">menu</i>
+        </header>
 
-            <div class="control-group">
-                <label>Leverage</label>
-                <select id="leverageSelect">
-                    <option value="5">5x</option>
-                    <option value="10">10x</option>
-                    <option value="20">20x</option>
-                </select>
-            </div>
+        <section class="hero">
+            <h1 class="hero-title">
+                <span>TRADING INTELLIGENCE</span>
+                <span class="highlight">T-REX</span>
+            </h1>
+            <p class="tagline">AI-Powered Smart Money Trading Intelligence for the Modern Crypto Era</p>
+        </section>
 
-            <div class="control-group">
-                <label>Risk Per Trade (%)</label>
-                <input type="number" id="riskInput" value="1.0" step="0.1">
-            </div>
-
-            <div class="control-group">
-                <button class="btn-primary" id="startBtn" onclick="toggleAnalysis()">
-                    <i class="ph ph-play"></i> Start Analysis
-                </button>
-            </div>
-
-            <div class="stats-card">
-                <div class="stat-row"><span>Winrate:</span> <span class="stat-val" id="winrate">0%</span></div>
-                <div class="stat-row"><span>Total Trades:</span> <span id="totalTrades">0</span></div>
-                <div class="stat-row"><span>Net PnL:</span> <span class="stat-val" id="netPnl">$0.00</span></div>
-            </div>
-
-            <div class="stats-card">
-                <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:5px;">Strategy Logic Active:</div>
-                <div class="tag ob">Order Blocks</div>
-                <div class="tag fvg" style="display:inline-block; margin-left:4px;">FVG</div>
-                <div class="tag swp" style="display:inline-block; margin-left:4px;">Sweeps</div>
-            </div>
-        </aside>
-
-        <!-- Chart -->
-        <section class="chart-area">
-            <div class="chart-legend">
-                <div class="legend-item"><div class="dot" style="background:var(--accent-green)"></div>Bullish OB</div>
-                <div class="legend-item"><div class="dot" style="background:var(--accent-red)"></div>Bearish OB</div>
-                <div class="legend-item"><div class="dot" style="background:rgba(59, 130, 246, 0.5)"></div>FVG Zone</div>
-                <div class="legend-item"><div class="dot" style="background:rgba(234, 179, 8, 0.5)"></div>Entry Zone</div>
-            </div>
-            <div class="chart-container">
-                <canvas id="priceChart"></canvas>
+        <section class="features-section">
+            <div class="circuit-bg"></div>
+            <h2 class="section-title">Future of Website</h2>
+            <div class="features-container">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="material-icons">speed</i>
+                    </div>
+                    <h3 class="feature-title">HIGH FAST AI</h3>
+                    <p class="feature-desc">Lightning-fast analysis with minimal latency</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="material-icons">verified</i>
+                    </div>
+                    <h3 class="feature-title">HIGH PROBABILITY</h3>
+                    <p class="feature-desc">Signals with exceptional accuracy rates</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="material-icons">card_giftcard</i>
+                    </div>
+                    <h3 class="feature-title">COMPLETELY FREE</h3>
+                    <p class="feature-desc">No hidden costs or subscription fees</p>
+                </div>
             </div>
         </section>
 
-        <!-- Panel -->
-        <aside class="feed-panel">
-            <div class="tabs">
-                <div class="tab active" onclick="switchTab('signals')">Live Signals</div>
-                <div class="tab" onclick="switchTab('backtest')">Backtest</div>
-            </div>
-
-            <div id="signalsContainer" class="log-container">
-                <!-- Logs will appear here -->
-                <div style="text-align:center; color:var(--text-secondary); margin-top:20px; font-size:0.8rem;">
-                    Waiting for setup...
+        <section class="analyzers-section">
+            <!-- SMC Card -->
+            <a href="https://smartmoney.space.z.ai/" class="card smc" target="_blank">
+                <div class="card-icon">
+                    <i class="material-icons">candlestick_chart</i>
                 </div>
-            </div>
-
-            <div id="backtestContainer" class="log-container" style="display:none;">
-                <div style="padding:10px; font-size:0.85rem;">
-                    <strong>5M Scalping Backtest (Last 1000 Candles)</strong>
-                    <div style="margin-top:10px; border-top:1px solid var(--border); padding-top:10px;">
-                        Simulating historical SMC logic...
-                        <br><br>
-                        Total Trades: <span style="color:var(--accent-blue)">42</span><br>
-                        Win Rate: <span style="color:var(--accent-green)">64%</span><br>
-                        Profit Factor: 1.85
-                    </div>
+                <div class="card-content">
+                    <h3 class="card-title">SMC AI Analyzer</h3>
+                    <p class="card-subtitle">Smart Money Concept Based AI</p>
                 </div>
-            </div>
-
-            <div class="telegram-mock">
-                <i class="ph ph-telegram-logo" style="font-size:1.5rem;"></i>
-                <div>
-                    <strong>Telegram Integration</strong><br>
-                    Alerts connected to @SMC_Bot_Channel
+                <i class="material-icons card-arrow" style="color: var(--primary-neon)">arrow_forward</i>
+                <div class="card-bg-deco">
+                    <i class="material-icons">analytics</i>
                 </div>
-            </div>
-        </aside>
-    </main>
+            </a>
 
-    <div class="toast-container" id="toastContainer"></div>
+            <!-- Elliott Wave Card -->
+            <a href="https://elliotwave.space.z.ai/" class="card elliott" target="_blank">
+                <div class="card-icon">
+                    <i class="material-icons">show_chart</i>
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">Elliott Wave Analyzer</h3>
+                    <p class="card-subtitle">Advanced Elliott Wave Theory AI</p>
+                </div>
+                <i class="material-icons card-arrow" style="color: var(--secondary-neon)">arrow_forward</i>
+                <div class="card-bg-deco">
+                    <i class="material-icons">waves</i>
+                </div>
+            </a>
+        </section>
+
+        <section class="contact-section">
+            <a href="https://t.me/Crypto_RIV" class="contact-btn" target="_blank">
+                <i class="material-icons">send</i>
+                Contact via Telegram
+            </a>
+            <p class="contact-note">Direct Support & Updates</p>
+        </section>
+
+    </div>
 
     <script>
-        // ==========================================
-        // 1. CONFIG & STATE
-        // ==========================================
-        const CONFIG = {
-            timeframe: '5m',
-            initialBalance: 1000,
-            riskPercent: 1,
-            leverage: 10,
-            rrr: 2.0 // Risk Reward Ratio
-        };
-
-        let state = {
-            isRunning: false,
-            candles: [], // {time, open, high, low, close}
-            markers: [], // Chart annotations
-            trades: [],
-            balance: CONFIG.initialBalance,
-            currentStructure: 'Bullish', // or Bearish
-            lastOb: null, // {type, high, low, time}
-            lastFvg: null // {top, bottom, type}
-        };
-
-        let chart;
-        let intervalId = null;
-
-        // ==========================================
-        // 2. MOCK DATA GENERATOR (Simulating Binance WS)
-        // ==========================================
-        function generateInitialData(count = 100) {
-            let price = 65000;
-            let time = new Date().getTime() - (count * 5 * 60 * 1000);
-            const data = [];
-
-            for (let i = 0; i < count; i++) {
-                const volatility = (Math.random() - 0.5) * 200;
-                const open = price;
-                const close = price + volatility;
-                const high = Math.max(open, close) + Math.random() * 50;
-                const low = Math.min(open, close) - Math.random() * 50;
-                
-                data.push({
-                    x: time,
-                    o: open,
-                    h: high,
-                    l: low,
-                    c: close
-                });
-
-                price = close;
-                time += 5 * 60 * 1000; // 5 min
-            }
-            return data;
+        // Particle System
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
-
-        function generateNextCandle(prevCandle) {
-            const volatility = (Math.random() - 0.5) * 150;
-            // Add some trend persistence
-            const trend = (Math.random() > 0.6) ? (Math.random() > 0.5 ? 80 : -80) : 0;
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Particle class
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.color = Math.random() > 0.5 ? 'rgba(0, 243, 255, ' : 'rgba(188, 19, 254, ';
+                this.alpha = Math.random() * 0.5 + 0.1;
+            }
             
-            const open = prevCandle.c;
-            const close = open + volatility + trend;
-            const high = Math.max(open, close) + Math.random() * 30;
-            const low = Math.min(open, close) - Math.random() * 30;
-            const time = prevCandle.x + (5 * 60 * 1000);
-
-            return { x: time, o: open, h: high, l: low, c: close };
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                // Wrap around edges
+                if (this.x < 0) this.x = canvas.width;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.y < 0) this.y = canvas.height;
+                if (this.y > canvas.height) this.y = 0;
+            }
+            
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color + this.alpha + ')';
+                ctx.fill();
+            }
         }
-
-        // ==========================================
-        // 3. SMC STRATEGY LOGIC
-        // ==========================================
-        function analyzeSMC(candles) {
-            if (candles.length < 5) return;
-
-            const current = candles[candles.length - 1];
-            const prev = candles[candles.length - 2];
-            const prev2 = candles[candles.length - 3];
-            const prev3 = candles[candles.length - 4]; // Used for OB identification
-            
-            // --- A. Market Structure (BOS/CHoCH) ---
-            let structureChange = null;
-            
-            // Detect Bullish BOS: Close > previous swing high
-            if (state.currentStructure !== 'Bullish' && current.c > prev.h && current.c > prev2.h) {
-                state.currentStructure = 'Bullish';
-                structureChange = 'Bullish BOS';
-                
-                // Identify Bullish OB: The last bearish candle before the BOS
-                if (prev2.c < prev2.o) { // Prev2 is bearish
-                    state.lastOb = {
-                        type: 'Bullish',
-                        high: prev2.h,
-                        low: prev2.l,
-                        entry: prev2.l + ((prev2.h - prev2.l) * 0.5), // 50% rule
-                        time: current.x
-                    };
-                    addMarker('Bullish OB', prev2.h, 'green', 'rectangle');
-                }
-            }
-
-            // Detect Bearish BOS: Close < previous swing low
-            if (state.currentStructure !== 'Bearish' && current.c < prev.l && current.c < prev2.l) {
-                state.currentStructure = 'Bearish';
-                structureChange = 'Bearish BOS';
-
-                // Identify Bearish OB: The last bullish candle before the BOS
-                if (prev2.c > prev2.o) { // Prev2 is bullish
-                    state.lastOb = {
-                        type: 'Bearish',
-                        high: prev2.h,
-                        low: prev2.l,
-                        entry: prev2.h - ((prev2.h - prev2.l) * 0.5), // 50% rule
-                        time: current.x
-                    };
-                    addMarker('Bearish OB', prev2.l, 'red', 'rectangle');
-                }
-            }
-
-            // --- B. FVG (Fair Value Gap) ---
-            // Bullish FVG: Gap between 1's High and 3's Low (Up move)
-            if (prev2.h < prev.l) {
-                state.lastFvg = { top: prev.l, bottom: prev2.h, type: 'Bullish' };
-                addMarker('FVG', prev.l, 'blue', 'box');
-            }
-            // Bearish FVG: Gap between 1's Low and 3's High (Down move)
-            if (prev2.l > prev.h) {
-                state.lastFvg = { top: prev2.l, bottom: prev.h, type: 'Bearish' };
-                addMarker('FVG', prev.h, 'blue', 'box');
-            }
-
-            // --- C. Signal Generation (Entry Logic) ---
-            // 1. Must be in Premium/Discount relative to OB
-            // 2. Liquidity Sweep (Wick) check
-            // 3. Price entering OB or FVG
-            
-            if (state.lastOb) {
-                const isBuySetup = state.lastOb.type === 'Bullish' && 
-                                    current.l <= state.lastOb.entry && 
-                                    current.l >= state.lastOb.low && // Entered OB
-                                    current.c > current.o; // Rejection wick/candle
-                
-                const isSellSetup = state.lastOb.type === 'Bearish' && 
-                                    current.h >= state.lastOb.entry && 
-                                    current.h <= state.lastOb.high && // Entered OB
-                                    current.c < current.o; // Rejection
-
-                // Check Confluences
-                let confluences = [];
-                if (state.lastOb) confluences.push('OB');
-                
-                // FVG Alignment
-                let fvgAlign = false;
-                if (state.lastFvg && state.lastOb.type === 'Bullish' && state.lastFvg.type === 'Bullish') fvgAlign = true;
-                if (state.lastFvg && state.lastOb.type === 'Bearish' && state.lastFvg.type === 'Bearish') fvgAlign = true;
-                if (fvgAlign) confluences.push('FVG');
-
-                // Liquidity Sweep (Simplistic: Wicked through previous high/low then closed inside)
-                let sweep = false;
-                if (isBuySetup && current.h > prev.h) sweep = true; // Swept prev high
-                if (isSellSetup && current.l < prev.l) sweep = true; // Swept prev low
-                if (sweep) confluences.push('Sweep');
-
-                // TRIGGER SIGNAL
-                if ((isBuySetup || isSellSetup) && confluences.length >= 2) {
-                    const type = isBuySetup ? 'BUY' : 'SELL';
-                    const entry = state.lastOb.entry;
-                    const sl = isBuySetup ? state.lastOb.low - 10 : state.lastOb.high + 10;
-                    const tp = isBuySetup ? entry + (entry - sl) * CONFIG.rrr : entry - (sl - entry) * CONFIG.rrr;
+        
+        // Create particles
+        const particles = [];
+        const particleCount = 100;
+        
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+        
+        // Connect particles with lines
+        function connectParticles() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    executeTrade(type, entry, sl, tp, confluences);
-                    state.lastOb = null; // Reset OB to avoid repeated signals
-                }
-            }
-        }
-
-        // ==========================================
-        // 4. TRADING & LOGGING
-        // ==========================================
-        function executeTrade(type, entry, sl, tp, confluences) {
-            const trade = {
-                id: Date.now(),
-                pair: document.getElementById('pairSelect').value,
-                type,
-                entry,
-                sl,
-                tp,
-                time: new Date().toLocaleTimeString(),
-                confluences
-            };
-            
-            state.trades.unshift(trade);
-            updateStatsUI();
-            addLog(trade);
-            sendTelegramAlert(trade);
-            showToast(trade);
-        }
-
-        function calculatePositionSize(entry, sl) {
-            const riskAmount = CONFIG.initialBalance * (CONFIG.riskPercent / 100);
-            const stopDistance = Math.abs(entry - sl);
-            // Position Size = Risk / Stop Distance * Leverage (Simplified)
-            // In real futures: Position Qty = (Balance * Risk%) / (Entry - SL) * Leverage
-            return (riskAmount / stopDistance) * CONFIG.leverage;
-        }
-
-        function updateStatsUI() {
-            // Simulation of PnL for stats
-            const wins = Math.floor(state.trades.length * 0.65); // Mock winrate
-            const total = state.trades.length;
-            const winrate = total > 0 ? Math.round((wins / total) * 100) : 0;
-            const pnl = (wins * 200) - ((total - wins) * 100); // Mock $ values
-
-            document.getElementById('winrate').innerText = winrate + '%';
-            document.getElementById('winrate').className = 'stat-val ' + (winrate >= 50 ? 'win' : 'loss');
-            document.getElementById('totalTrades').innerText = total;
-            document.getElementById('netPnl').innerText = '$' + pnl.toFixed(2);
-            document.getElementById('netPnl').className = 'stat-val ' + (pnl >= 0 ? 'win' : 'loss');
-        }
-
-        function addLog(trade) {
-            const container = document.getElementById('signalsContainer');
-            
-            // Remove "Waiting" msg if exists
-            if (container.children.length > 0 && container.children[0].style.textAlign === 'center') {
-                container.innerHTML = '';
-            }
-
-            const html = `
-                <div class="signal-card ${trade.type.toLowerCase()}">
-                    <div class="signal-header">
-                        <span>${trade.pair} ${trade.type}</span>
-                        <span class="signal-time">${trade.time}</span>
-                    </div>
-                    <div class="signal-details">
-                        <div class="detail-item"><span>Entry</span><b>${trade.entry.toFixed(2)}</b></div>
-                        <div class="detail-item"><span>TP</span><b style="color:var(--accent-green)">${trade.tp.toFixed(2)}</b></div>
-                        <div class="detail-item"><span>SL</span><b style="color:var(--accent-red)">${trade.sl.toFixed(2)}</b></div>
-                        <div class="detail-item">
-                            <span>Confluences</span>
-                            <div>
-                                ${trade.confluences.map(c => `<span class="tag ${c.toLowerCase()}">${c}</span>`).join(' ')}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.insertAdjacentHTML('afterbegin', html);
-        }
-
-        function showToast(trade) {
-            const container = document.getElementById('toastContainer');
-            const icon = trade.type === 'BUY' ? 'trend-up' : 'trend-down';
-            const color = trade.type === 'BUY' ? 'var(--accent-green)' : 'var(--accent-red)';
-            
-            const html = `
-                <div class="toast" style="border-left: 4px solid ${color}">
-                    <i class="ph ph-${icon} toast-icon" style="color:${color}"></i>
-                    <div class="toast-content">
-                        <h4>${trade.type} Signal: ${trade.pair}</h4>
-                        <p>Entry: ${trade.entry.toFixed(2)} | Confluences: ${trade.confluences.length}</p>
-                    </div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', html);
-            setTimeout(() => {
-                container.lastElementChild.remove();
-            }, 4000);
-        }
-
-        function sendTelegramAlert(trade) {
-            console.log(`[TELEGRAM BOT] Sending Alert:
-            🚀 Signal: ${trade.type} ${trade.pair}
-            📊 Entry: ${trade.entry.toFixed(2)}
-            🛑 Stop Loss: ${trade.sl.toFixed(2)}
-            🎯 Take Profit: ${trade.tp.toFixed(2)}
-            ⚙️ Leverage: ${CONFIG.leverage}x
-            `);
-        }
-
-        // ==========================================
-        // 5. CHART RENDERING
-        // ==========================================
-        function initChart() {
-            const ctx = document.getElementById('priceChart').getContext('2d');
-            
-            // Generate fake initial candles
-            state.candles = generateInitialData(60);
-
-            chart = new Chart(ctx, {
-                type: 'line', // Using line for simplicity in canvas, customized to look like candles via points or bar chart ideally
-                data: {
-                    datasets: [
-                        {
-                            label: 'Price',
-                            data: state.candles.map(c => ({x: c.x, y: c.c})),
-                            borderColor: '#3b82f6',
-                            borderWidth: 2,
-                            tension: 0.1,
-                            pointRadius: 0
-                        },
-                        {
-                            label: 'OB Zones',
-                            data: [],
-                            backgroundColor: 'rgba(234, 179, 8, 0.2)',
-                            borderColor: 'rgba(234, 179, 8, 0.5)',
-                            borderWidth: 1,
-                            type: 'bar',
-                            barThickness: 4,
-                            hidden: true
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: false,
-                    scales: {
-                        x: { type: 'time', time: { unit: 'minute' }, grid: { display: false } },
-                        y: { grid: { color: '#2d3748' }, position: 'right' }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { mode: 'index', intersect: false }
+                    if (distance < 100) {
+                        const opacity = (1 - distance / 100) * 0.15;
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0, 243, 255, ${opacity})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
                     }
                 }
-            });
+            }
         }
-
-        function updateChart() {
-            // Update price line
-            chart.data.datasets[0].data = state.candles.map(c => ({x: c.x, y: c.c}));
+        
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Draw OB Rectangles (Using a scatter plot or annotation plugin is better, but here we use a visual trick or just markers)
-            // For this lightweight POC, we rely on the log and toast for specific OBs, 
-            // but let's visualize the last OB on chart using a background color band if possible.
-            // Since standard ChartJS is limited without plugins, we skip complex geometric drawing on the chart itself
-            // and focus on the accurate logic in the logs.
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
             
-            chart.update('none'); // Efficient update
+            connectParticles();
+            requestAnimationFrame(animate);
         }
-
-        function addMarker(label, price, color, shape) {
-            // In a full production app, this would use the ChartJS Annotation plugin
-            // For now, we log it to console and maybe draw a point
-            console.log(`Marker Added: ${label} @ ${price}`);
-        }
-
-        // ==========================================
-        // 6. MAIN LOOP
-        // ==========================================
-        function toggleAnalysis() {
-            const btn = document.getElementById('startBtn');
-            if (state.isRunning) {
-                clearInterval(intervalId);
-                state.isRunning = false;
-                btn.innerHTML = '<i class="ph ph-play"></i> Start Analysis';
-                btn.style.background = 'var(--accent-blue)';
-            } else {
-                state.isRunning = true;
-                btn.innerHTML = '<i class="ph ph-stop"></i> Stop Analysis';
-                btn.style.background = 'var(--accent-red)';
-                
-                intervalId = setInterval(() => {
-                    const lastCandle = state.candles[state.candles.length - 1];
-                    const newCandle = generateNextCandle(lastCandle);
+        
+        animate();
+        
+        // Simple interaction enhancement to mimic GSAP feel
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card');
+            
+            // Mouse move effect for 3D tilt
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
                     
-                    state.candles.push(newCandle);
-                    if (state.candles.length > 200) state.candles.shift(); // Keep array small
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = ((y - centerY) / centerY) * -2;
+                    const rotateY = ((x - centerX) / centerX) * 2;
 
-                    analyzeSMC(state.candles);
-                    updateChart();
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+                });
 
-                }, 1000); // New candle every second for demo purposes (Simulating 5m timeframe speedup)
-            }
-        }
-
-        function switchTab(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            if (tab === 'signals') {
-                document.getElementById('signalsContainer').style.display = 'flex';
-                document.getElementById('backtestContainer').style.display = 'none';
-            } else {
-                document.getElementById('signalsContainer').style.display = 'none';
-                document.getElementById('backtestContainer').style.display = 'block';
-            }
-        }
-
-        // Initialize
-        window.addEventListener('load', () => {
-            initChart();
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+                });
+            });
         });
-
     </script>
 </body>
 </html>
-```
